@@ -3,18 +3,23 @@ version: 2.1
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0
+      - image: cimg/node:14.19.0  # Use Node.js 14 image
     steps:
-      - checkout
-      - setup_remote_docker
+      - checkout 
+      - setup_remote_docker 
+      
+      # Install Shared Dependencies (Global)
+      - run: 
+          name: Install Ionic CLI
+          command: npm install -g @ionic/cli || exit 1
 
       # Install Dependencies for Each Service
-      - run: 
+      - run:
           name: Install Dependencies (udagram-api-feed)
           working_directory: ./udagram-api-feed
           command: npm ci || exit 1
 
-      - run: 
+      - run:
           name: Install Dependencies (udagram-api-user)
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
@@ -24,23 +29,25 @@ jobs:
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
 
-
+      - run: 
+          name: Install Dependencies (udagram-reverseproxy)
+          working_directory: ./udagram-reverseproxy
+          command: npm ci || exit 1
+      
       # Front-End Build (Important!)
       - run:
           name: Build Frontend
           working_directory: ./udagram-frontend 
           command: |
-            source set_env.sh || exit 1 
             ionic build --prod || exit 1 
 
-      # Build Docker Images (including reverseproxy)
-      - run:
-          name: Build Docker Images
+      - run: 
+          name: Build Images
           command: |
             docker build -t udagram-api-feed ./udagram-api-feed || exit 1
             docker build -t udagram-api-user ./udagram-api-user || exit 1
-            docker build -t udagram-frontend ./udagram-frontend/www || exit 1
-            docker build -t udagram-reverseproxy -f ./udagram-reverseproxy/Dockerfile . || exit 1
+            docker build -t udagram-frontend ./udagram-frontend/www || exit 1  
+            docker build -t udagram-reverseproxy ./udagram-reverseproxy || exit 1
 
       - run:
           name: Tag Images
