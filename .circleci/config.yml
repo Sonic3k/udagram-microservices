@@ -2,10 +2,10 @@ version: 2.1
 
 jobs:
   build_and_push:
-    docker: # This line MUST NOT be indented. It's a key at the same level as 'steps'.
-      - image: cimg/node:14.19.0
+    docker:
+      - image: cimg/node:16.14.0  # Use Node.js 16.14.0 image
         user: root  
-    steps:  # This line MUST NOT be indented. It's a key at the same level as 'docker'.
+    steps:
       - checkout 
       - setup_remote_docker 
 
@@ -35,7 +35,12 @@ jobs:
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
 
-      # Front-End Build (Important!)
+      - run: 
+          name: Install Dependencies (udagram-reverseproxy)
+          working_directory: ./udagram-reverseproxy
+          command: npm ci || exit 1
+
+      # Front-End Build
       - run:
           name: Build Frontend
           working_directory: ./udagram-frontend 
