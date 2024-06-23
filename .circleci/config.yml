@@ -15,9 +15,9 @@ jobs:
           command: npm cache clean --force
 
       # Install Shared Dependencies (Global)
-      #- run: 
-      #    name: Install Ionic CLI
-      #    command: npm install -g @ionic/cli || exit 1
+      - run: 
+          name: Install Ionic CLI
+          command: npm install -g @ionic/cli || exit 1
 
       # Install Dependencies for Each Service
       - run: 
