@@ -4,7 +4,7 @@ jobs:
   build_and_push:
     docker:
       - image: cimg/node:14.19.0
-      user: root  # Run as root for permissions
+      user: root  
     steps:
       - checkout 
       - setup_remote_docker 
@@ -29,16 +29,21 @@ jobs:
           name: Install Dependencies (udagram-api-user)
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
-
-      # Install and Build Frontend (corrected)
-      - run: 
-          name: Install & Build Frontend
+      
+      - run:
+          name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
+          command: npm install -f || exit 1
+
+      # Front-End Build
+      - run:
+          name: Build Frontend
+          working_directory: ./udagram-frontend 
           command: |
-            npm install -f || exit 1 #force install
             source set_env.sh || exit 1 
             ionic build --prod || exit 1 
 
+      # Build Docker Images (no dependencies for reverseproxy)
       - run: 
           name: Build Images
           command: |
