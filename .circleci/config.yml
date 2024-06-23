@@ -1,29 +1,25 @@
 version: 2.1
+
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0
+      - image: cimg/node:14.19.0  # Use Node.js 14 image
     steps:
       - checkout 
       - setup_remote_docker 
 
-      # Update npm
-      - run:
-          name: Update npm
-          command: npm install -g npm@10.8.1 || exit 1
-
-      # Install Dependencies for Each Service (using --legacy-peer-deps)
-      - run:
+      # Install Dependencies for Each Service (without bcrypt)
+      - run: 
           name: Install Dependencies (udagram-api-feed)
           working_directory: ./udagram-api-feed
-          command: npm ci --legacy-peer-deps || exit 1
+          command: npm ci || exit 1
 
-      - run:
+      - run: 
           name: Install Dependencies (udagram-api-user)
           working_directory: ./udagram-api-user
-          command: npm ci --legacy-peer-deps || exit 1
-      
-      - run:
+          command: npm ci || exit 1
+
+      - run: 
           name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
@@ -31,8 +27,8 @@ jobs:
       - run: 
           name: Install Dependencies (udagram-reverseproxy)
           working_directory: ./udagram-reverseproxy
-          command: npm ci --legacy-peer-deps || exit 1
-
+          command: npm ci || exit 1
+      
       # Front-End Build (Important!)
       - run:
           name: Build Frontend
