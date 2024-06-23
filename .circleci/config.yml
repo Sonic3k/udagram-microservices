@@ -1,35 +1,42 @@
 version: 2.1
 
-orbs:
-  node: circleci/node@5.0.2
-
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0
-    working_directory: ~/project 
-
+      - image: cimg/node:14.19.0  # Updated to use Node.js 14 image
     steps:
       - checkout 
+      - setup_remote_docker 
+
+      - run:
+          name: Install Dependencies (udagram-api-feed)
+          working_directory: ./udagram-api-feed
+          command: |
+            npm install bcrypt @types/bcrypt || exit 1 # Install necessary dependencies
+            npm ci || exit 1
+            
+      - run:
+          name: Install Dependencies (udagram-api-user)
+          working_directory: ./udagram-api-user
+          command: |
+            npm install bcrypt @types/bcrypt || exit 1 # Install necessary dependencies
+            npm ci || exit 1
       
-      # Install Dependencies for Each Service
-      - node/install-packages:
-          app-dir: ./udagram-api-feed  
-          override-ci-command: npm ci || exit 1
-      - node/install-packages:
-          app-dir: ./udagram-api-user 
-          override-ci-command: npm ci || exit 1
-      - node/install-packages:
-          app-dir: ./udagram-frontend 
-          override-ci-command: npm ci || exit 1
-      - node/install-packages:
-          app-dir: ./udagram-reverseproxy 
-          override-ci-command: npm ci || exit 1
+      - run:
+          name: Install Dependencies (udagram-frontend)
+          working_directory: ./udagram-frontend
+          command: |
+            npm install || exit 1
       
-      # Build Docker Images (with error handling)
+      - run:
+          name: Install Dependencies (udagram-reverseproxy)
+          working_directory: ./udagram-reverseproxy
+          command: |
+            npm install || exit 1
+        
       - run: 
           name: Build Images
-          command: | 
+          command: |
             docker build -t udagram-api-feed ./udagram-api-feed || exit 1
             docker build -t udagram-api-user ./udagram-api-user || exit 1
             docker build -t udagram-frontend ./udagram-frontend || exit 1
@@ -43,7 +50,6 @@ jobs:
             docker tag udagram-frontend sonic3k/udagram-frontend:v1
             docker tag udagram-reverseproxy sonic3k/udagram-reverseproxy:v1
 
-      # Docker Login (using environment variables)
       - run:
           name: Docker Login
           command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -54,8 +60,7 @@ jobs:
             docker push sonic3k/udagram-api-feed:v1 || exit 1
             docker push sonic3k/udagram-api-user:v1 || exit 1
             docker push sonic3k/udagram-frontend:v1 || exit 1
-            docker push sonic3k/udagram-reverseproxy:v1 || exit 1
-
+            docker push sonic3k/udagram-reverseproxy:v1 || exit 1 
 
 workflows:
   build_and_push_workflow:
@@ -63,4 +68,4 @@ workflows:
       - build_and_push:
           filters:
             branches:
-              only: main # Trigger the workflow only for pushes to the 'main' branch
+              only: main 
