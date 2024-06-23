@@ -2,10 +2,10 @@ version: 2.1
 
 jobs:
   build_and_push:
-    docker:
+    docker: # This line MUST NOT be indented. It's a key at the same level as 'steps'.
       - image: cimg/node:14.19.0
-      user: root  
-    steps:
+        user: root  
+    steps:  # This line MUST NOT be indented. It's a key at the same level as 'docker'.
       - checkout 
       - setup_remote_docker 
 
@@ -35,7 +35,12 @@ jobs:
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
 
-      # Front-End Build
+      - run: 
+          name: Install Dependencies (udagram-reverseproxy)
+          working_directory: ./udagram-reverseproxy
+          command: npm ci || exit 1
+      
+      # Front-End Build (Important!)
       - run:
           name: Build Frontend
           working_directory: ./udagram-frontend 
@@ -43,7 +48,6 @@ jobs:
             source set_env.sh || exit 1 
             ionic build --prod || exit 1 
 
-      # Build Docker Images (no dependencies for reverseproxy)
       - run: 
           name: Build Images
           command: |
