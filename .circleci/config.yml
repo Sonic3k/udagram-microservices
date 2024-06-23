@@ -3,12 +3,12 @@ version: 2.1
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0  # Use Node.js 14 image
+      - image: cimg/node:14.19.0
     steps:
-      - checkout 
-      - setup_remote_docker 
+      - checkout
+      - setup_remote_docker
 
-      # Install Dependencies for Each Service (without bcrypt)
+      # Install Dependencies for Each Service
       - run: 
           name: Install Dependencies (udagram-api-feed)
           working_directory: ./udagram-api-feed
@@ -18,17 +18,13 @@ jobs:
           name: Install Dependencies (udagram-api-user)
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
-
-      - run: 
+      
+      - run:
           name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
 
-      - run: 
-          name: Install Dependencies (udagram-reverseproxy)
-          working_directory: ./udagram-reverseproxy
-          command: npm ci || exit 1
-      
+
       # Front-End Build (Important!)
       - run:
           name: Build Frontend
@@ -37,13 +33,14 @@ jobs:
             source set_env.sh || exit 1 
             ionic build --prod || exit 1 
 
-      - run: 
-          name: Build Images
+      # Build Docker Images (including reverseproxy)
+      - run:
+          name: Build Docker Images
           command: |
             docker build -t udagram-api-feed ./udagram-api-feed || exit 1
             docker build -t udagram-api-user ./udagram-api-user || exit 1
-            docker build -t udagram-frontend ./udagram-frontend/www || exit 1  
-            docker build -t udagram-reverseproxy ./udagram-reverseproxy || exit 1
+            docker build -t udagram-frontend ./udagram-frontend/www || exit 1
+            docker build -t udagram-reverseproxy -f ./udagram-reverseproxy/Dockerfile . || exit 1
 
       - run:
           name: Tag Images
