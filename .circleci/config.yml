@@ -1,19 +1,45 @@
 version: 2.1
 
+orbs:
+  node: circleci/node@5.0.2  # Use CircleCI's Node orb (latest stable version)
+
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0  
+      - image: cimg/node:14.19.0  # Use Node.js 14 image
     steps:
-      - checkout
+      - checkout 
       - setup_remote_docker 
 
-      - run: 
-          name: Build Images
+      # Install Dependencies for Each Service
+      - node/install-packages:
+          app-dir: ./udagram-api-feed  
+          override-ci-command: npm ci || exit 1
+      - node/install-packages:
+          app-dir: ./udagram-api-user 
+          override-ci-command: npm ci || exit 1
+      - node/install-packages:
+          app-dir: ./udagram-frontend 
+          override-ci-command: npm install -f || exit 1 #force install
+      - node/install-packages:
+          app-dir: ./udagram-reverseproxy 
+          override-ci-command: npm ci || exit 1
+
+      # Front-End Build
+      - run:
+          name: Build Frontend
+          working_directory: ./udagram-frontend 
+          command: |
+            source set_env.sh || exit 1 # Source env vars
+            ionic build --prod || exit 1 
+
+      # Build Docker Images (with error handling and correct context)
+      - run:
+          name: Build Docker Images
           command: |
             docker build -t udagram-api-feed ./udagram-api-feed || exit 1
             docker build -t udagram-api-user ./udagram-api-user || exit 1
-            docker build -t udagram-frontend ./udagram-frontend || exit 1
+            docker build -t udagram-frontend ./udagram-frontend/www || exit 1  
             docker build -t udagram-reverseproxy ./udagram-reverseproxy || exit 1
 
       - run:
@@ -34,7 +60,8 @@ jobs:
             docker push sonic3k/udagram-api-feed:v1 || exit 1
             docker push sonic3k/udagram-api-user:v1 || exit 1
             docker push sonic3k/udagram-frontend:v1 || exit 1
-            docker push sonic3k/udagram-reverseproxy:v1 || exit 1 
+            docker push sonic3k/udagram-reverseproxy:v1 || exit 1
+  
 
 workflows:
   build_and_push_workflow:
