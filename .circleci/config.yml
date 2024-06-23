@@ -1,59 +1,45 @@
-# Couldn't automatically generate a config from your source code.
-# This is a generic template to serve as a base for your custom config
-
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  test:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/executor-intro/ & https://circleci.com/docs/configuration-reference/#executor-job
+  build_and_push:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
-      - image: cimg/base:current
+      - image: docker:19.03.13 # Docker image to use for the build environment
+    steps:
+      - checkout # Checkout the project code from your repository
+      - setup_remote_docker # Set up a remote Docker environment in CircleCI
 
-    # Add steps to the job
-    # See: https://circleci.com/docs/jobs-steps/#steps-overview & https://circleci.com/docs/configuration-reference/#steps
-    steps:
-      # Checkout the code as the first step.
-      - checkout
-      # Replace this with a real test runner invocation
-      - run:
-          name: Run tests
-          command: echo 'replace me with real tests!' && false
-  build:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - checkout
-      # Replace this with steps to build a package, or executable
-      - run:
-          name: Build an artifact
-          command: touch example.txt
-      - store_artifacts:
-          path: example.txt
-  deploy:
-    docker:
-      - image: cimg/base:current
-    steps:
-      # Replace this with steps to deploy to users
-      - run:
-          name: deploy
-          command: "#e.g. ./deploy.sh"
+      - run: 
+          name: Build Images
+          command: | # Use a multiline string for better readability
+            docker build -t udagram-api-feed ./udagram-api-feed
+            docker build -t udagram-api-user ./udagram-api-user
+            docker build -t udagram-frontend ./udagram-frontend
+            docker build -t udagram-reverseproxy ./udagram-reverseproxy
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
+      - run:
+          name: Tag Images
+          command: |
+            docker tag udagram-api-feed sonic3k/udagram-api-feed:v1
+            docker tag udagram-api-user sonic3k/udagram-api-user:v1
+            docker tag udagram-frontend sonic3k/udagram-frontend:v1
+            docker tag udagram-reverseproxy sonic3k/udagram-reverseproxy:v1
+
+      - run:
+          name: Docker Login
+          command: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - run:
+          name: Push Images
+          command: |
+            docker push sonic3k/udagram-api-feed:v1
+            docker push sonic3k/udagram-api-user:v1
+            docker push sonic3k/udagram-frontend:v1
+            docker push sonic3k/udagram-reverseproxy:v1 
+
 workflows:
-  example:
+  build_and_push_workflow: # Name for your workflow
     jobs:
-      - test
-      - build:
-          requires:
-            - test
-      - deploy:
-          requires:
-            - test
+      - build_and_push:
+          filters: # Trigger workflow only on pushes to the main branch
+            branches:
+              only: main
