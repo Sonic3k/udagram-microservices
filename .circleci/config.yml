@@ -40,6 +40,13 @@ jobs:
           working_directory: ./udagram-reverseproxy
           command: npm ci || exit 1
 
+      - run:
+          name: Build Frontend
+          working_directory: ./udagram-frontend 
+          command: |
+            source set_env.sh || exit 1
+            ionic build --prod || exit 1 
+
       - run: 
           name: Build Images
           command: |
