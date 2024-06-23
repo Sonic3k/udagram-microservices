@@ -1,16 +1,16 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@6.1.0  # Use the Node.js orb
+  node: circleci/node@5.0.2  # Latest stable version of Node Orb
 
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:14.19.0  # Specify a Node.js Docker image
+      - image: cimg/node:14.19.0  
     steps:
       - checkout 
       - node/install-packages:
-          override-ci-command: npm ci # Install dependencies using npm ci
+          override-ci-command: npm ci 
       - run: 
           name: Build Images
           command: | 
@@ -45,4 +45,4 @@ workflows:
       - build_and_push:
           filters:
             branches:
-              only: main # Trigger the workflow only for pushes to the 'main' branch
+              only: main 
