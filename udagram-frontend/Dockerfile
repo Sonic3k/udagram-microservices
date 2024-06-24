@@ -3,6 +3,9 @@ FROM node:16.16.0-alpine3.15 AS ionic
 ## Create app directory
 WORKDIR /usr/src/app
 ## Install app dependencies
+RUN npm install -g @ionic/cli@7.2.0
+RUN npm install -f
+
 ## A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 RUN npm ci --force
