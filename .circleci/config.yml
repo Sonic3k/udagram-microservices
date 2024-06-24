@@ -47,10 +47,19 @@ jobs:
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
       
+      #- run:
+      #    name: Install Dependencies (udagram-frontend)
+      #    working_directory: ./udagram-frontend
+      #    command: npm install -f || exit 1
+
       - run:
           name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
-          command: npm install -f || exit 1
+          command: |
+            npm uninstall @angular/http # Remove old dependency
+            npm install @angular/common/http # Install HttpClient module
+            npm ci  # Install dependencies based on the updated configuration.
+
 
       - run: 
           name: Install Dependencies (udagram-reverseproxy)
