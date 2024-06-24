@@ -1,5 +1,5 @@
 ### Build
-FROM beevelop/ionic:latest AS ionic
+FROM node:16.16.0-alpine3.15 AS ionic
 ## Create app directory
 WORKDIR /usr/src/app
 ## Install app dependencies
