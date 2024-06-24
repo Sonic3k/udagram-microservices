@@ -65,8 +65,8 @@ jobs:
           command: |
             docker build -t udagram-api-feed ./udagram-api-feed || exit 1
             docker build -t udagram-api-user ./udagram-api-user || exit 1
-            docker build -t udagram-frontend ./udagram-frontend/www || exit 1  
-            docker build -t udagram-reverseproxy ./udagram-reverseproxy || exit 1
+            docker build -t udagram-frontend ./udagram-frontend/www || exit 1 
+            docker build -t udagram-reverseproxy -f ./udagram-reverseproxy/Dockerfile ./udagram-reverseproxy || exit 1
 
       - run:
           name: Tag Images
