@@ -6,13 +6,17 @@ WORKDIR /usr/src/app
 RUN npm install -g @ionic/cli@7.2.0
 RUN npm install -f
 
-## A wildcard is used to ensure both package.json AND package-lock.json are copied
-COPY package*.json ./
+## Copy package.json and package-lock.json
+COPY package*.json ./ 
+
+## Install dependencies
 RUN npm ci --force
+
 ## Bundle app source
 COPY . .
+
 RUN ionic build
-### Run 
+
+### Run
 FROM nginx:alpine
-#COPY www /usr/share/nginx/html
-COPY --from=ionic  /usr/src/app/www /usr/share/nginx/html
+COPY --from=ionic /usr/src/app/www /usr/share/nginx/html
