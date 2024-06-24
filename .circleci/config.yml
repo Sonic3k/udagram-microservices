@@ -72,7 +72,7 @@ jobs:
           working_directory: ./udagram-frontend 
           command: |
             source set_env.sh || exit 1
-            ionic build || exit 1  
+            ionic build --openssl-legacy-provider || exit 1  
 
       # Build Docker Images (using Dockerfiles in each sub-directory)
       - run: 
