@@ -25,16 +25,16 @@ jobs:
           command: npm install -g @ionic/cli@7.2.0 || exit 1
 
       # Install Angular CLI
-      - run: 
-          name: Install Angular CLI
-          command: npm install -g @angular/cli || exit 1
+      #- run: 
+      #    name: Install Angular CLI
+      #    command: npm install -g @angular/cli || exit 1
       
       # Set up environment variables to point to global binaries
-      - run:
-          name: Set Environment Variables
-          command: |
-            echo "export PATH=/usr/local/lib/node_modules/@ionic/cli/bin:/usr/local/lib/node_modules/@angular/cli/bin:$PATH" >> $BASH_ENV
-            source $BASH_ENV
+      #- run:
+      #    name: Set Environment Variables
+      #    command: |
+      #      echo "export PATH=/usr/local/lib/node_modules/@ionic/cli/bin:/usr/local/lib/node_modules/@angular/cli/bin:$PATH" >> $BASH_ENV
+      #      source $BASH_ENV
 
       # Install Dependencies for Each Service
       - run: 
@@ -47,18 +47,18 @@ jobs:
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
       
-      #- run:
-      #    name: Install Dependencies (udagram-frontend)
-      #    working_directory: ./udagram-frontend
-      #    command: npm install -f || exit 1
-
       - run:
           name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
-          command: |
-            npm uninstall @angular/http # Remove old dependency
-            npm install @angular/common/http # Install HttpClient module
-            npm ci  # Install dependencies based on the updated configuration.
+          command: npm install -f || exit 1
+
+      #- run:
+      #    name: Install Dependencies (udagram-frontend)
+      #    working_directory: ./udagram-frontend
+      #    command: |
+      #      npm uninstall @angular/http # Remove old dependency
+      #      npm install @angular/common/http # Install HttpClient module
+      #      npm npm install -f  # Install dependencies based on the updated configuration.
 
 
       - run: 
