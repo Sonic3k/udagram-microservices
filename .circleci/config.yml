@@ -3,32 +3,32 @@ version: 2.1
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:16.16.0  # Updated to Node.js 16.16.0
+      - image: cimg/node:16.16.0
         user: root
     steps:
       - checkout
       - setup_remote_docker
 
       # Clear npm cache (optional, but recommended for troubleshooting)
-      - run: 
+      - run:
           name: Clear NPM Cache
           command: npm cache clean --force
 
       # Update to NPM 8.11
-      - run: 
+      - run:
           name: Update npm
           command: npm install -g npm@8.11.0 || exit 1
 
       # Install Ionic CLI (v7.2.0)
-      - run: 
+      - run:
           name: Install Ionic CLI
           command: npm install -g @ionic/cli@7.2.0 || exit 1
 
       # Install Angular CLI
-      - run: 
+      - run:
           name: Install Angular CLI
           command: npm install -g @angular/cli || exit 1
-      
+
       # Set up environment variables to point to global binaries
       - run:
           name: Set Environment Variables
@@ -37,31 +37,31 @@ jobs:
             source $BASH_ENV
 
       # Install Dependencies for Each Service
-      - run: 
+      - run:
           name: Install Dependencies (udagram-api-feed)
           working_directory: ./udagram-api-feed
           command: npm ci || exit 1
 
-      - run: 
+      - run:
           name: Install Dependencies (udagram-api-user)
           working_directory: ./udagram-api-user
           command: npm ci || exit 1
-      
+
       - run:
           name: Install Dependencies (udagram-frontend)
           working_directory: ./udagram-frontend
           command: npm install -f || exit 1
 
-      #- run:
-      #    name: Install Dependencies (udagram-frontend)
-      #    working_directory: ./udagram-frontend
-      #    command: |
-      #      npm uninstall @angular/http # Remove old dependency
-      #      npm install @angular/common/http # Install HttpClient module
-      #      npm npm install -f  # Install dependencies based on the updated configuration.
+      # Uncomment this block if you need to update specific dependencies
+      # - run:
+      #     name: Install Dependencies (udagram-frontend)
+      #     working_directory: ./udagram-frontend
+      #     command: |
+      #       npm uninstall @angular/http # Remove old dependency
+      #       npm install @angular/common/http # Install HttpClient module
+      #       npm npm install -f  # Install dependencies based on the updated configuration.
 
-
-      - run: 
+      - run:
           name: Install Dependencies (udagram-reverseproxy)
           working_directory: ./udagram-reverseproxy
           command: npm ci || exit 1
@@ -69,18 +69,18 @@ jobs:
       # Front-End Build
       - run:
           name: Build Frontend
-          working_directory: ./udagram-frontend 
+          working_directory: ./udagram-frontend
           command: |
             source set_env.sh || exit 1
             ionic build || exit 1
 
       # Build Docker Images (using Dockerfiles in each sub-directory)
-      - run: 
+      - run:
           name: Build Images
           command: |
             docker build -t udagram-api-feed -f ./udagram-api-feed/Dockerfile ./udagram-api-feed || exit 1
             docker build -t udagram-api-user -f ./udagram-api-user/Dockerfile ./udagram-api-user || exit 1
-            docker build -t udagram-frontend -f ./udagram-frontend/Dockerfile ./udagram-frontend || exit 1  
+            docker build -t udagram-frontend -f ./udagram-frontend/Dockerfile ./udagram-frontend || exit 1
             docker build -t udagram-reverseproxy -f ./udagram-reverseproxy/Dockerfile ./udagram-reverseproxy || exit 1
 
       - run:
@@ -101,7 +101,7 @@ jobs:
             docker push sonic3k/udagram-api-feed:v1 || exit 1
             docker push sonic3k/udagram-api-user:v1 || exit 1
             docker push sonic3k/udagram-frontend:v1 || exit 1
-            docker push sonic3k/udagram-reverseproxy:v1 || exit 1 
+            docker push sonic3k/udagram-reverseproxy:v1 || exit 1
 
 workflows:
   build_and_push_workflow:
@@ -109,4 +109,4 @@ workflows:
       - build_and_push:
           filters:
             branches:
-              only: main 
+              only: main
